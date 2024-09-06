@@ -1,3 +1,15 @@
+'''
+A python script that takes a video and interactively separates the frames in the three categories.
+
+Before starting the program you should substitute VIDEO_PATH with the path of your video,
+then execute the program and it will prompt you a window showing the frames. You can tell the program
+what you're seeing with the keyboard (the keys to use are printed on screen). The saved images are stored
+in three folders that (if they don't yet exists) are created when starting the program. You should
+export the images before running the program another time, or else there is the risk to lose them.
+
+This is not necessarily the most updated version of the program. See https://github.com/marcortinovis/CloudChamber/blob/main/image_selector.py
+'''
+
 import os
 import shutil
 import cv2
@@ -8,6 +20,11 @@ import numpy as np
 class VideoFrameSorterApp:
     def __init__(self, root, video_path, trace_folder, doubt_folder, nothing_folder):
         self.root = root
+        self.screen_height = self.root.winfo_screenheight()
+        self.screen_width = self.root.winfo_screenwidth()
+        self.scale_canvas = 0.9
+        self.scale_image = 0.89
+        self.root.state('zoomed')
         self.video_path = video_path
         self.trace_folder = trace_folder
         self.doubt_folder = doubt_folder
@@ -25,15 +42,15 @@ class VideoFrameSorterApp:
 
         # Configure the main window
         self.root.title("Video Frame Sorter")
-        self.root.geometry("1900x1000")
+        self.root.geometry(f"{int(round(self.scale_canvas*self.screen_width))}x{int(round(self.scale_canvas*self.screen_height))}+{0}+{0}")
 
         # Create canvas to display images
-        self.canvas = tk.Canvas(root, width=1600, height=900)
+        self.canvas = tk.Canvas(root, width=self.scale_canvas*self.screen_width, height=self.scale_canvas*self.screen_height)
         self.canvas.pack()
 
         # Instructions for the user
         self.instructions = tk.Label(root, text="Press T for 'Trace', D for 'Doubt', N for 'Nothing'")
-        self.instructions.pack(pady=10)
+        self.instructions.pack(pady=0)
 
         # Bind keyboard keys to corresponding functions
         self.root.bind("<KeyPress-t>", self.move_to_trace)
@@ -44,11 +61,7 @@ class VideoFrameSorterApp:
         self.display_frame()
 
     def display_frame(self):
-
         self.cap.set(cv2.CAP_PROP_POS_FRAMES, np.random.uniform(low=0.0, high=self.total_frames+1, size=None))
-        ret, frame1 = self.cap.read()
-
-
         ret, frame = self.cap.read()
         if ret:
             self.current_frame = frame
@@ -57,7 +70,7 @@ class VideoFrameSorterApp:
             # Convert frame to PIL Image for Tkinter display
             img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             img_pil = Image.fromarray(img)
-            img_pil = img_pil.resize((1600, 900), Image.ANTIALIAS)
+            img_pil = img_pil.resize((int(round(self.scale_image*self.screen_width)), int(round(self.scale_image*self.screen_height))), Image.Resampling.LANCZOS)
             self.img_tk = ImageTk.PhotoImage(img_pil)
 
             # Clear the canvas and display the frame
