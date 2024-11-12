@@ -63,12 +63,17 @@ class VideoFrameSorterApp:
     def display_frame(self):
         self.cap.set(cv2.CAP_PROP_POS_FRAMES, np.random.uniform(low=0.0, high=self.total_frames+1, size=None))
         ret, frame = self.cap.read()
+
         if ret:
             self.current_frame = frame
             self.frame_index += 1
 
             # Convert frame to PIL Image for Tkinter display
             img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+            # Rotate the image (comment out to deactivate it)
+            # img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+
             img_pil = Image.fromarray(img)
             img_pil = img_pil.resize((int(round(self.scale_image*self.screen_width)), int(round(self.scale_image*self.screen_height))), Image.Resampling.LANCZOS)
             self.img_tk = ImageTk.PhotoImage(img_pil)
@@ -103,7 +108,7 @@ class VideoFrameSorterApp:
         self.display_frame()
 
 # Set your directories here
-video_path = 'VIDEO_PATH'         # Path to your video file
+video_path = 'videos\\preliminary\\IMG_0832.MOV'         # Path to your video file
 trace_folder = 'trace_frames'     # Folder where "Trace" frames will go
 doubt_folder = 'doubt_frames'     # Folder where "Doubt" frames will go
 nothing_folder = 'nothing_frames' # Folder where "Nothing" frames will go
